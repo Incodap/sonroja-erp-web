@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Sexy Shop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css">
+  <style>.admin-content{opacity:0}.admin-content.ready{opacity:1;transition:opacity .15s}</style>
+</head>
+<body>
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="admin-sidebar__brand">
+      <span class="admin-sidebar__logo">&#9829;</span>
+      <span class="admin-sidebar__title">SexyShop Admin</span>
+    </div>
+
+    <nav class="admin-sidebar__nav">
+      <a href="javascript:void(0)" class="admin-sidebar__link admin-sidebar__link--active" onclick="showSection('dashboard')" data-section="dashboard">
+        <span class="admin-sidebar__icon">&#9632;</span>
+        Dashboard
+      </a>
+      <a href="javascript:void(0)" class="admin-sidebar__link" onclick="showSection('categories')" data-section="categories">
+        <span class="admin-sidebar__icon">&#9776;</span>
+        Categor&iacute;as
+      </a>
+      <a href="javascript:void(0)" class="admin-sidebar__link" onclick="showSection('products')" data-section="products">
+        <span class="admin-sidebar__icon">&#9733;</span>
+        Productos
+      </a>
+      <a href="javascript:void(0)" class="admin-sidebar__link" onclick="showSection('orders')" data-section="orders">
+        <span class="admin-sidebar__icon">&#128230;</span>
+        Pedidos
+      </a>
+      <a href="javascript:void(0)" class="admin-sidebar__link" onclick="showSection('finances')" data-section="finances">
+        <span class="admin-sidebar__icon">&#128176;</span>
+        Finanzas
+      </a>
+    </nav>
+
+    <div class="admin-sidebar__footer">
+      <div class="admin-sidebar__user" id="adminUser"></div>
+      <button class="admin-sidebar__logout" onclick="logout()">Cerrar sesi&oacute;n</button>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="admin-content">
+
+    <!-- Top header -->
+    <header class="admin-header">
+      <button class="admin-header__menu-toggle" id="menuToggle" onclick="toggleSidebar()">&#9776;</button>
+      <h1 class="admin-header__title" id="sectionTitle">Dashboard</h1>
+    </header>
+
+    <!-- ===== DASHBOARD SECTION ===== -->
+    <section class="admin-section admin-section--hidden" id="dashboardSection">
+      <div class="admin-stats">
+        <div class="admin-stat-card admin-stat-card--revenue">
+          <span class="admin-stat-card__icon">&#128176;</span>
+          <div class="admin-stat-card__info">
+            <span class="admin-stat-card__value" id="statRevenue">$0.00</span>
+            <span class="admin-stat-card__label">Ingresos totales</span>
+          </div>
+        </div>
+        <div class="admin-stat-card admin-stat-card--orders">
+          <span class="admin-stat-card__icon">&#128230;</span>
+          <div class="admin-stat-card__info">
+            <span class="admin-stat-card__value" id="statOrdersMonth">0</span>
+            <span class="admin-stat-card__label">Pedidos este mes</span>
+          </div>
+        </div>
+        <div class="admin-stat-card admin-stat-card--products">
+          <span class="admin-stat-card__icon">&#9733;</span>
+          <div class="admin-stat-card__info">
+            <span class="admin-stat-card__value" id="statProducts">0</span>
+            <span class="admin-stat-card__label">Productos activos</span>
+          </div>
+        </div>
+        <div class="admin-stat-card admin-stat-card--alerts">
+          <span class="admin-stat-card__icon">&#9888;</span>
+          <div class="admin-stat-card__info">
+            <span class="admin-stat-card__value" id="statLowStock">0</span>
+            <span class="admin-stat-card__label">Stock bajo</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-dashboard-grid">
+        <div class="admin-table-wrapper">
+          <h2 class="admin-table-wrapper__title">&#128293; Productos m&aacute;s vendidos</h2>
+          <div class="admin-table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Vendidos</th>
+                  <th>Ingresos</th>
+                </tr>
+              </thead>
+              <tbody id="topProductsBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="admin-table-wrapper">
+          <h2 class="admin-table-wrapper__title">&#9888; Alertas de stock bajo</h2>
+          <div class="admin-table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Stock</th>
+                  <th>Acci&oacute;n</th>
+                </tr>
+              </thead>
+              <tbody id="lowStockBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-dashboard-grid">
+        <div class="admin-table-wrapper">
+          <h2 class="admin-table-wrapper__title">&#128202; Distribuci&oacute;n de pedidos</h2>
+          <div class="admin-status-distribution" id="statusDistribution"></div>
+        </div>
+
+        <div class="admin-table-wrapper">
+          <h2 class="admin-table-wrapper__title">&#128203; Pedidos recientes</h2>
+          <div class="admin-table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Pedido</th>
+                  <th>Cliente</th>
+                  <th>Total</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="recentOrdersTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CATEGORIES SECTION ===== -->
+    <section class="admin-section admin-section--hidden" id="categoriesSection">
+      <div class="admin-section__header">
+        <h2 class="admin-section__title">Categor&iacute;as</h2>
+        <button class="admin-btn admin-btn--primary" onclick="openCategoryModal()">+ Nueva Categor&iacute;a</button>
+      </div>
+
+      <div class="admin-table-wrapper">
+        <div class="admin-table-scroll">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Icono</th>
+                <th>Nombre</th>
+                <th>Slug</th>
+                <th>Productos</th>
+                <th>Orden</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="categoriesTable">
+              <!-- Filled by admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CATEGORY PRODUCTS ORDER ===== -->
+    <div class="admin-modal admin-modal--wide" id="categoryOrderModal">
+      <div class="admin-modal__header">
+        <h3 class="admin-modal__title" id="categoryOrderTitle">Ordenar productos</h3>
+        <button class="admin-modal__close" onclick="closeCategoryOrder()">&times;</button>
+      </div>
+      <div class="admin-modal__body">
+        <p class="admin-category-order__hint">Usa las flechas para ordenar. El primer producto aparece primero en la tienda.</p>
+        <div class="admin-category-order__grid" id="categoryOrderGrid"></div>
+        <div class="admin-modal__actions">
+          <button class="admin-btn admin-btn--secondary" onclick="closeCategoryOrder()">Cancelar</button>
+          <button class="admin-btn admin-btn--primary" id="saveCategoryOrderBtn" onclick="saveCategoryOrder()">Guardar orden</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PRODUCTS SECTION ===== -->
+    <section class="admin-section admin-section--hidden" id="productsSection">
+      <div class="admin-section__header">
+        <h2 class="admin-section__title">Productos</h2>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="admin-toolbar">
+        <div class="admin-toolbar__search">
+          <span class="admin-toolbar__search-icon">&#128269;</span>
+          <input type="text" id="productSearch" placeholder="Buscar productos..." oninput="handleProductSearch(this.value)">
+          <button type="button" class="admin-toolbar__search-clear" id="productSearchClear" onclick="clearProductSearch()" style="display:none">&times;</button>
+        </div>
+
+        <div class="admin-toolbar__filters">
+          <select id="productCategoryFilter" onchange="handleProductFilter('category', this.value)">
+            <option value="">Todas las categor&iacute;as</option>
+          </select>
+
+          <select id="productStatusFilter" onchange="handleProductFilter('status', this.value)">
+            <option value="">Todos</option>
+            <option value="active">Activos</option>
+            <option value="inactive">Inactivos</option>
+            <option value="soldout">Agotados</option>
+          </select>
+
+          <select id="productBadgeFilter" onchange="handleProductFilter('badge', this.value)">
+            <option value="">Todos</option>
+            <option value="new">Nuevo</option>
+            <option value="hot">Popular</option>
+            <option value="sale">Oferta</option>
+          </select>
+
+          <select id="productSort" onchange="handleProductFilter('sort', this.value)">
+            <option value="newest">M&aacute;s reciente</option>
+            <option value="name-asc">Nombre A-Z</option>
+            <option value="name-desc">Nombre Z-A</option>
+            <option value="price-asc">Precio menor</option>
+            <option value="price-desc">Precio mayor</option>
+            <option value="stock-asc">Stock menor</option>
+            <option value="stock-desc">Stock mayor</option>
+          </select>
+        </div>
+
+        <div class="admin-toolbar__actions">
+          <button class="admin-btn admin-btn--secondary" onclick="openCatalogPdf()" title="Abrir catálogo elegante en PDF">&#128196; Catálogo PDF</button>
+          <button class="admin-btn admin-btn--secondary" onclick="exportProductsCSV()">&#128190; CSV</button>
+          <button class="admin-btn admin-btn--primary" onclick="openProductModal()">+ Nuevo Producto</button>
+        </div>
+      </div>
+
+      <!-- Stats bar -->
+      <div class="admin-stats-bar">
+        <span id="productCount">0 productos encontrados</span>
+      </div>
+
+      <div class="admin-bulk-bar" id="productBulkBar" style="display:none">
+        <span class="admin-bulk-bar__count" id="productBulkCount">0 seleccionados</span>
+        <button class="admin-btn admin-btn--sm admin-btn--secondary" onclick="bulkProductAction('activate')">Activar</button>
+        <button class="admin-btn admin-btn--sm admin-btn--secondary" onclick="bulkProductAction('deactivate')">Desactivar</button>
+        <button class="admin-btn admin-btn--sm" style="background:#ef4444;color:#fff" onclick="bulkProductAction('delete')">Eliminar</button>
+        <button class="admin-btn admin-btn--sm admin-btn--secondary" onclick="clearProductSelection()">Cancelar</button>
+      </div>
+
+      <!-- Products table -->
+      <div class="admin-table-wrapper">
+        <div class="admin-table-scroll">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th style="width:40px"><input type="checkbox" id="productSelectAll" onchange="toggleSelectAllProducts(this.checked)"></th>
+                <th style="width:50px"></th>
+                <th>Nombre</th>
+                <th>Categor&iacute;a</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Badge</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="productsTable">
+              <!-- Filled by admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="admin-pagination" id="productPagination"></div>
+    </section>
+
+    <!-- ===== ORDERS SECTION ===== -->
+    <section class="admin-section admin-section--hidden" id="ordersSection">
+      <div class="admin-toolbar">
+        <div class="admin-toolbar__search">
+          <span class="admin-toolbar__search-icon">&#128269;</span>
+          <input type="text" id="orderSearch" placeholder="Buscar por nombre, tel&eacute;fono o ID..." oninput="handleOrderSearch(this.value)">
+          <button type="button" class="admin-toolbar__search-clear" id="orderSearchClear" onclick="clearOrderSearch()" style="display:none">&times;</button>
+        </div>
+        <div class="admin-toolbar__filters">
+          <select id="orderStatusFilter" onchange="filterOrders()">
+            <option value="all">Todos</option>
+            <option value="pending">Pendiente</option>
+            <option value="confirmed">Confirmado</option>
+            <option value="shipped">Enviado</option>
+            <option value="delivered">Entregado</option>
+            <option value="cancelled">Cancelado</option>
+          </select>
+        </div>
+        <div class="admin-toolbar__actions">
+          <button class="admin-btn admin-btn--primary" onclick="openCreateOrderModal()">&#10010; Nuevo pedido</button>
+          <button class="admin-btn admin-btn--secondary" onclick="exportOrdersCSV()">&#128190; CSV</button>
+        </div>
+      </div>
+
+      <div class="admin-stats-bar">
+        <span id="orderCount">0 pedidos</span>
+      </div>
+
+      <div class="admin-bulk-bar" id="orderBulkBar" style="display:none">
+        <span class="admin-bulk-bar__count" id="orderBulkCount">0 seleccionados</span>
+        <button class="admin-btn admin-btn--sm admin-btn--secondary" onclick="bulkOrderAction('confirmed')">Confirmar</button>
+        <button class="admin-btn admin-btn--sm admin-btn--secondary" onclick="bulkOrderAction('shipped')">Enviar</button>
+        <button class="admin-btn admin-btn--sm admin-btn--secondary" onclick="bulkOrderAction('delivered')">Entregar</button>
+        <button class="admin-btn admin-btn--sm" style="background:#ef4444;color:#fff" onclick="bulkOrderAction('cancelled')">Cancelar</button>
+        <button class="admin-btn admin-btn--sm admin-btn--secondary" onclick="clearOrderSelection()">Cancelar selecci&oacute;n</button>
+      </div>
+
+      <div class="admin-table-wrapper">
+        <div class="admin-table-scroll">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th style="width:40px"><input type="checkbox" id="orderSelectAll" onchange="toggleSelectAllOrders(this.checked)"></th>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Tel&eacute;fono</th>
+                <th>Entrega</th>
+                <th>Total</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+                <th>Gu&iacute;a</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTable">
+              <!-- Filled by admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FINANCES SECTION ===== -->
+    <section class="admin-section admin-section--hidden" id="financesSection">
+      <!-- Month selector -->
+      <div class="admin-section__header">
+        <h2 class="admin-section__title">Finanzas</h2>
+        <div class="admin-section__filters">
+          <input type="month" id="financeMonth" onchange="loadFinanceData()">
+        </div>
+      </div>
+
+      <!-- Financial summary -->
+      <div class="admin-stats finance-stats">
+        <div class="admin-stat-card">
+          <span class="admin-stat-card__icon">&#128176;</span>
+          <div class="admin-stat-card__info">
+            <span class="admin-stat-card__value" id="finVentas">$0</span>
+            <span class="admin-stat-card__label">Ventas del mes</span>
+          </div>
+        </div>
+        <div class="admin-stat-card">
+          <span class="admin-stat-card__icon">&#128181;</span>
+          <div class="admin-stat-card__info">
+            <span class="admin-stat-card__value" id="finCosto">$0</span>
+            <span class="admin-stat-card__label">Inversi&oacute;n (costo)</span>
+          </div>
+        </div>
+        <div class="admin-stat-card">
+          <span class="admin-stat-card__icon">&#128184;</span>
+          <div class="admin-stat-card__info">
+            <span class="admin-stat-card__value" id="finGastos">$0</span>
+            <span class="admin-stat-card__label">Gastos del mes</span>
+          </div>
+        </div>
+        <div class="admin-stat-card">
+          <span class="admin-stat-card__icon">&#128200;</span>
+          <div class="admin-stat-card__info">
+            <span class="admin-stat-card__value" id="finGanancia">$0</span>
+            <span class="admin-stat-card__label">Ganancia neta</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Split cards -->
+      <div class="finance-split">
+        <div class="finance-split__card finance-split__card--investor">
+          <div class="finance-split__title">Inversionista (t&uacute;)</div>
+          <div class="finance-split__rows">
+            <div class="finance-split__row">
+              <span>Inversi&oacute;n recuperada</span>
+              <span id="finInvRecuperada">$0</span>
+            </div>
+            <div class="finance-split__row">
+              <span>Comisi&oacute;n 25%</span>
+              <span id="finComision25">$0</span>
+            </div>
+            <div class="finance-split__row finance-split__row--total">
+              <span>Total que recibes</span>
+              <span id="finTotalInv">$0</span>
+            </div>
+          </div>
+        </div>
+        <div class="finance-split__card finance-split__card--partner">
+          <div class="finance-split__title">Socia (ventas)</div>
+          <div class="finance-split__rows">
+            <div class="finance-split__row">
+              <span>Comisi&oacute;n 75%</span>
+              <span id="finComision75">$0</span>
+            </div>
+            <div class="finance-split__row finance-split__row--total">
+              <span>Total que recibe</span>
+              <span id="finTotalSocia">$0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cash balance -->
+      <div class="finance-balance">
+        <div class="finance-balance__info">
+          <span class="finance-balance__label">Saldo en caja</span>
+          <span class="finance-balance__amount" id="finSaldoCaja">$0</span>
+          <span class="finance-balance__sub" id="finSaldoSub">Saldo inicial + ventas - gastos</span>
+        </div>
+        <button class="admin-btn admin-btn--sm admin-btn--secondary" onclick="editInitialBalance()">Editar saldo inicial</button>
+      </div>
+
+      <!-- Two column: Products sold + Expenses -->
+      <div class="admin-dashboard-grid">
+        <!-- Products sold this month -->
+        <div class="admin-table-wrapper">
+          <h2 class="admin-table-wrapper__title">Productos vendidos</h2>
+          <div class="admin-table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Vendidos</th>
+                  <th>Venta</th>
+                  <th>Costo</th>
+                  <th>Rendimiento</th>
+                </tr>
+              </thead>
+              <tbody id="finProductsBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Expenses -->
+        <div class="admin-table-wrapper">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px 0">
+            <h2 class="admin-table-wrapper__title" style="padding:0">Gastos del mes</h2>
+            <button class="admin-btn admin-btn--sm admin-btn--primary" onclick="openExpenseModal()">+ Gasto</button>
+          </div>
+          <div class="admin-table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Descripci&oacute;n</th>
+                  <th>Monto</th>
+                  <th>Fecha</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="finExpensesBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== MODAL OVERLAY ===== -->
+  <div class="admin-overlay" id="modalOverlay" onclick="closeModals()"></div>
+
+  <!-- ===== CATEGORY MODAL ===== -->
+  <div class="admin-modal" id="categoryModal">
+    <div class="admin-modal__header">
+      <h3 class="admin-modal__title" id="categoryModalTitle">Nueva Categor&iacute;a</h3>
+      <button class="admin-modal__close" onclick="closeModals()">&times;</button>
+    </div>
+
+    <form class="admin-modal__body" id="categoryForm">
+      <input type="hidden" id="categoryId">
+
+      <div class="admin-form-group">
+        <label class="admin-form-group__label" for="categoryName">Nombre</label>
+        <input class="admin-form-group__input" type="text" id="categoryName" required placeholder="Ej: Lencer&iacute;a">
+      </div>
+
+      <div class="admin-form-group">
+        <label class="admin-form-group__label" for="categorySlug">Slug</label>
+        <input class="admin-form-group__input" type="text" id="categorySlug" required placeholder="ej: lenceria">
+      </div>
+
+      <div class="admin-form-group">
+        <label class="admin-form-group__label" for="categoryIcon">Icono</label>
+        <input class="admin-form-group__input" type="text" id="categoryIcon" placeholder="Selecciona o escribe un emoji" readonly>
+        <div class="emoji-picker" id="emojiPicker"></div>
+      </div>
+
+      <div class="admin-form-group">
+        <label class="admin-form-group__label" for="categoryOrder">Orden de display</label>
+        <input class="admin-form-group__input" type="number" id="categoryOrder" value="0" min="0">
+      </div>
+
+      <div class="admin-modal__actions">
+        <button type="button" class="admin-btn admin-btn--secondary" onclick="closeModals()">Cancelar</button>
+        <button type="submit" class="admin-btn admin-btn--primary">Guardar</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ===== PRODUCT MODAL ===== -->
+  <div class="admin-modal" id="productModal">
+    <div class="admin-modal__header">
+      <h3 class="admin-modal__title" id="productModalTitle">Nuevo Producto</h3>
+      <button class="admin-modal__close" onclick="closeModals()">&times;</button>
+    </div>
+
+    <form class="admin-modal__body" id="productForm">
+      <input type="hidden" id="productId">
+
+      <div class="admin-form-group">
+        <label class="admin-form-group__label" for="productName">Nombre</label>
+        <input class="admin-form-group__input" type="text" id="productName" required placeholder="Nombre del producto">
+      </div>
+
+      <input type="hidden" id="productSlug">
+
+      <div class="admin-form-group">
+        <label class="admin-form-group__label" for="productDescription">Descripci&oacute;n</label>
+        <textarea class="admin-form-group__textarea" id="productDescription" rows="4" placeholder="Descripci&oacute;n del producto"></textarea>
+      </div>
+
+      <div class="admin-form-row">
+        <div class="admin-form-group">
+          <label class="admin-form-group__label" for="productPrice">Precio de venta</label>
+          <input class="admin-form-group__input" type="number" id="productPrice" required min="0.01" step="0.01" placeholder="0.00">
+        </div>
+        <div class="admin-form-group">
+          <label class="admin-form-group__label" for="productCostPrice">Costo de compra</label>
+          <input class="admin-form-group__input" type="number" id="productCostPrice" min="0" step="0.01" placeholder="0.00">
+        </div>
+      </div>
+      <div class="admin-form-group">
+        <label class="admin-form-group__label" for="productOldPrice">Precio anterior (tachado)</label>
+        <input class="admin-form-group__input" type="number" id="productOldPrice" min="0" step="0.01" placeholder="Opcional">
+      </div>
+
+      <div class="admin-form-row">
+        <div class="admin-form-group">
+          <label class="admin-form-group__label" for="productCategorySelect">Categor&iacute;a</label>
+          <select class="admin-form-group__select" id="productCategorySelect" required>
+            <option value="">Seleccionar...</option>
+            <!-- Filled by admin.js -->
+          </select>
+        </div>
+
+        <div class="admin-form-group">
+          <label class="admin-form-group__label" for="productStock">Stock</label>
+          <input class="admin-form-group__input" type="number" id="productStock" required min="0" value="0">
+        </div>
+      </div>
+
+      <div class="admin-form-row">
+        <div class="admin-form-group">
+          <label class="admin-form-group__label" for="productLowStock">Alerta stock bajo</label>
+          <input class="admin-form-group__input" type="number" id="productLowStock" min="0" placeholder="Sin alerta">
+        </div>
+        <div class="admin-form-group">
+          <label class="admin-form-group__label" for="productBadge">Badge</label>
+          <select class="admin-form-group__select" id="productBadge">
+            <option value="">Ninguno</option>
+            <option value="new">New</option>
+            <option value="hot">Hot</option>
+            <option value="sale">Sale</option>
+          </select>
+        </div>
+
+        <div class="admin-form-group admin-form-group--checkbox">
+          <label class="admin-form-group__label">
+            <input type="checkbox" id="productActive" checked>
+            Activo
+          </label>
+        </div>
+      </div>
+
+      <details class="admin-form-details">
+        <summary>Dimensiones y peso (opcional)</summary>
+        <div class="admin-form-row" style="margin-top:12px">
+          <div class="admin-form-group">
+            <label class="admin-form-group__label" for="productWeight">Peso (kg)</label>
+            <input class="admin-form-group__input" type="number" id="productWeight" min="0" step="0.01" placeholder="Ej: 0.5">
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-group__label" for="productLength">Largo (cm)</label>
+            <input class="admin-form-group__input" type="number" id="productLength" min="0" step="0.1" placeholder="Ej: 25">
+          </div>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label class="admin-form-group__label" for="productWidth">Ancho (cm)</label>
+            <input class="admin-form-group__input" type="number" id="productWidth" min="0" step="0.1" placeholder="Ej: 20">
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-group__label" for="productHeight">Alto (cm)</label>
+            <input class="admin-form-group__input" type="number" id="productHeight" min="0" step="0.1" placeholder="Ej: 15">
+          </div>
+        </div>
+      </details>
+
+      <!-- Image upload (only when editing) -->
+      <div class="admin-form-group" id="productImagesSection" style="display:none">
+        <label class="admin-form-group__label">Im&aacute;genes del producto</label>
+        <div class="product-images-grid" id="productImagesGrid"></div>
+        <div class="product-image-upload" id="productImageUploadArea">
+          <input type="file" id="productImageFile" accept="image/*" multiple style="display:none" onchange="uploadProductImages()">
+          <button type="button" class="admin-btn admin-btn--secondary" onclick="document.getElementById('productImageFile').click()">
+            &#128247; Subir imagen
+          </button>
+          <span class="product-image-upload__hint">JPG, PNG o WebP. M&aacute;x 5MB. L&iacute;mite 5 fotos.</span>
+        </div>
+      </div>
+
+      <div class="admin-modal__actions">
+        <button type="button" class="admin-btn admin-btn--secondary" onclick="closeModals()">Cancelar</button>
+        <button type="submit" class="admin-btn admin-btn--primary">Guardar</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ===== ORDER DETAIL MODAL ===== -->
+  <div class="admin-modal admin-modal--order" id="orderDetailModal">
+    <div class="admin-modal__header">
+      <h3 class="admin-modal__title">Pedido <code id="orderDetailId">&mdash;</code> &middot; <span id="orderDetailDate" style="font-weight:400;font-size:0.85rem"></span></h3>
+      <div class="admin-modal__header-actions">
+        <div class="order-detail__quick-actions" id="orderQuickActions"></div>
+        <button class="admin-btn admin-btn--sm admin-btn--secondary" onclick="printOrder()">&#128424;</button>
+        <button class="admin-modal__close" onclick="closeModals()">&times;</button>
+      </div>
+    </div>
+
+    <div class="order-detail">
+      <!-- Left: Customer + Address -->
+      <div class="order-detail__sidebar">
+        <div class="order-detail__inline-fields">
+          <div class="order-detail__field">
+            <span class="order-detail__label">Cliente</span>
+            <span class="order-detail__value" id="orderDetailName">&mdash;</span>
+          </div>
+          <div class="order-detail__field">
+            <span class="order-detail__label">Tel&eacute;fono</span>
+            <span class="order-detail__value" id="orderDetailPhone">&mdash;</span>
+          </div>
+          <div class="order-detail__field" id="orderDetailEmailField" style="display:none">
+            <span class="order-detail__label">Email</span>
+            <span class="order-detail__value" id="orderDetailEmail">&mdash;</span>
+          </div>
+        </div>
+
+        <div class="order-detail__section-label">Env&iacute;o</div>
+        <div class="order-detail__address" id="orderDetailAddress">&mdash;</div>
+
+        <div class="order-detail__section-label">Notas</div>
+        <div class="order-detail__notes-row">
+          <textarea class="admin-form-group__textarea" id="orderDetailNotes" rows="1" placeholder="Agregar notas..."></textarea>
+          <button class="admin-btn admin-btn--sm admin-btn--secondary" onclick="saveOrderNotes()">Guardar</button>
+        </div>
+
+        <div class="order-detail__section-label">Cambiar estado</div>
+        <div class="order-detail__status-manual">
+          <select class="admin-form-group__select" id="orderStatusSelect">
+            <option value="pending">Pendiente</option>
+            <option value="confirmed">Confirmado</option>
+            <option value="shipped">Enviado</option>
+            <option value="delivered">Entregado</option>
+            <option value="cancelled">Cancelado</option>
+          </select>
+          <button class="admin-btn admin-btn--sm admin-btn--primary" onclick="updateOrderStatus()">Cambiar</button>
+        </div>
+      </div>
+
+      <!-- Right: Items + timeline -->
+      <div class="order-detail__main">
+        <div class="admin-table-scroll">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Cant.</th>
+                <th>Precio</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody id="orderDetailItems"></tbody>
+          </table>
+        </div>
+        <div class="order-detail__totals">
+          <div class="order-detail__totals-row">
+            <span>Subtotal productos</span>
+            <span id="orderDetailSubtotal">&mdash;</span>
+          </div>
+          <div class="order-detail__totals-row" id="orderDetailShippingRow">
+            <span id="orderDetailShippingLabel">Env&iacute;o</span>
+            <span id="orderDetailShipping">&mdash;</span>
+          </div>
+          <div class="order-detail__totals-row order-detail__totals-row--total">
+            <span>Total</span>
+            <span id="orderDetailTotal">&mdash;</span>
+          </div>
+        </div>
+        <div class="order-detail__delivery-info" id="orderDetailDeliveryInfo">
+          <!-- Filled by admin.js -->
+        </div>
+
+        <!-- Package dimensions — always visible -->
+        <div class="order-detail__dims" id="orderDimsSection">
+          <span class="shipping-preview__dims-title">Paquete</span>
+          <div class="shipping-preview__dims-row">
+            <label>Peso (kg)<input type="number" id="shipWeight" value="1" min="0.1" step="0.1"></label>
+            <label>Largo (cm)<input type="number" id="shipLength" value="25" min="1" step="1"></label>
+            <label>Ancho (cm)<input type="number" id="shipWidth" value="20" min="1" step="1"></label>
+            <label>Alto (cm)<input type="number" id="shipHeight" value="15" min="1" step="1"></label>
+          </div>
+        </div>
+
+        <!-- Shipping -->
+        <div id="orderShippingContent">
+          <button class="admin-btn admin-btn--sm admin-btn--secondary" onclick="quoteShipping()" style="width:100%">Cotizar env&iacute;o</button>
+        </div>
+
+        <details class="order-detail__timeline-toggle">
+          <summary>Historial</summary>
+          <div class="admin-order-timeline" id="orderTimeline"></div>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CREATE ORDER MODAL ===== -->
+  <div class="admin-modal admin-modal--wide" id="createOrderModal">
+    <div class="admin-modal__header">
+      <h3 class="admin-modal__title">Nuevo pedido manual</h3>
+      <button class="admin-modal__close" onclick="closeModals()">&times;</button>
+    </div>
+    <div class="admin-modal__body create-order-body">
+
+      <!-- Products section -->
+      <div class="create-order__section">
+        <h4 class="create-order__section-title">Productos</h4>
+        <div class="create-order__product-search">
+          <input type="text" id="createOrderProductSearch" placeholder="&#128269; Buscar producto..." oninput="filterCreateOrderProducts(this.value)">
+          <div class="create-order__product-results" id="createOrderProductResults"></div>
+        </div>
+        <div class="create-order__items" id="createOrderItems">
+          <p class="create-order__items-empty">Aún no has agregado productos</p>
+        </div>
+      </div>
+
+      <!-- Customer section -->
+      <div class="create-order__section">
+        <h4 class="create-order__section-title">Datos del cliente</h4>
+        <div class="admin-form-group">
+          <label class="admin-form-group__label">Nombre completo *</label>
+          <input type="text" class="admin-form-group__input" id="createOrderName" placeholder="Nombre del cliente">
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label class="admin-form-group__label">WhatsApp *</label>
+            <input type="tel" class="admin-form-group__input" id="createOrderPhone" placeholder="6221234567">
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-group__label">Email</label>
+            <input type="email" class="admin-form-group__input" id="createOrderEmail" placeholder="opcional">
+          </div>
+        </div>
+      </div>
+
+      <!-- Delivery method section -->
+      <div class="create-order__section">
+        <h4 class="create-order__section-title">M&eacute;todo de entrega</h4>
+        <div class="create-order__radio-group">
+          <label class="create-order__radio">
+            <input type="radio" name="createOrderDelivery" value="local" checked onchange="onCreateOrderDeliveryChange()">
+            <span>&#x1F6F5; Local (Guaymas)</span>
+          </label>
+          <label class="create-order__radio">
+            <input type="radio" name="createOrderDelivery" value="national" onchange="onCreateOrderDeliveryChange()">
+            <span>&#x1F4E6; Nacional</span>
+          </label>
+        </div>
+
+        <!-- Local address fields -->
+        <div id="createOrderLocalFields">
+          <div class="admin-form-group">
+            <label class="admin-form-group__label">Calle y n&uacute;mero</label>
+            <input type="text" class="admin-form-group__input" id="createOrderLocalStreet" placeholder="Av. Serdán 123">
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-group__label">Colonia</label>
+            <input type="text" class="admin-form-group__input" id="createOrderLocalNeighborhood" placeholder="Centro">
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-group__label">Referencias</label>
+            <input type="text" class="admin-form-group__input" id="createOrderLocalReferences" placeholder="opcional">
+          </div>
+        </div>
+
+        <!-- National address fields -->
+        <div id="createOrderNationalFields" style="display:none">
+          <div class="admin-form-group">
+            <label class="admin-form-group__label">Calle</label>
+            <input type="text" class="admin-form-group__input" id="createOrderNatStreet">
+          </div>
+          <div class="admin-form-row">
+            <div class="admin-form-group">
+              <label class="admin-form-group__label">No. Exterior</label>
+              <input type="text" class="admin-form-group__input" id="createOrderNatExtNum">
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-group__label">No. Interior</label>
+              <input type="text" class="admin-form-group__input" id="createOrderNatIntNum" placeholder="opcional">
+            </div>
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-group__label">Colonia</label>
+            <input type="text" class="admin-form-group__input" id="createOrderNatNeighborhood">
+          </div>
+          <div class="admin-form-row">
+            <div class="admin-form-group">
+              <label class="admin-form-group__label">Ciudad</label>
+              <input type="text" class="admin-form-group__input" id="createOrderNatCity">
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-group__label">C.P.</label>
+              <input type="text" class="admin-form-group__input" id="createOrderNatZip" maxlength="5">
+            </div>
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-group__label">Estado</label>
+            <input type="text" class="admin-form-group__input" id="createOrderNatState">
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment method section -->
+      <div class="create-order__section">
+        <h4 class="create-order__section-title">M&eacute;todo de pago</h4>
+        <div class="create-order__radio-group">
+          <label class="create-order__radio">
+            <input type="radio" name="createOrderPayment" value="cash" checked>
+            <span>&#x1F4B5; Efectivo</span>
+          </label>
+          <label class="create-order__radio">
+            <input type="radio" name="createOrderPayment" value="transfer">
+            <span>&#x1F3E6; Transferencia</span>
+          </label>
+          <label class="create-order__radio" id="createOrderMpRadio">
+            <input type="radio" name="createOrderPayment" value="mp">
+            <span>&#x1F4B3; Mercado Pago</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Status + notes -->
+      <div class="create-order__section">
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label class="admin-form-group__label">Estado inicial</label>
+            <select class="admin-form-group__input" id="createOrderStatus">
+              <option value="pending">Pendiente</option>
+              <option value="confirmed">Confirmado</option>
+              <option value="delivered">Entregado</option>
+            </select>
+          </div>
+        </div>
+        <div class="admin-form-group">
+          <label class="admin-form-group__label">Notas internas</label>
+          <textarea class="admin-form-group__input" id="createOrderNotes" rows="2" placeholder="Pedido por teléfono, venta en mostrador, etc."></textarea>
+        </div>
+      </div>
+
+      <!-- Totals -->
+      <div class="create-order__totals" id="createOrderTotals">
+        <div class="create-order__totals-row">
+          <span>Subtotal</span>
+          <span id="createOrderSubtotal">$0.00</span>
+        </div>
+        <div class="create-order__totals-row">
+          <span id="createOrderShippingLabel">Envío local</span>
+          <span id="createOrderShipping">$0.00</span>
+        </div>
+        <div class="create-order__totals-row create-order__totals-row--total">
+          <span>Total</span>
+          <span id="createOrderTotal">$0.00</span>
+        </div>
+      </div>
+
+    </div>
+    <div class="admin-modal__footer">
+      <button class="admin-btn admin-btn--secondary" onclick="closeModals()">Cancelar</button>
+      <button class="admin-btn admin-btn--primary" id="createOrderSubmitBtn" onclick="submitCreateOrder()">Crear pedido</button>
+    </div>
+  </div>
+
+  <!-- ===== EXPENSE MODAL ===== -->
+  <div class="admin-modal admin-modal--sm" id="expenseModal">
+    <div class="admin-modal__header">
+      <h3 class="admin-modal__title">Nuevo gasto</h3>
+      <button class="admin-modal__close" onclick="closeModals()">&times;</button>
+    </div>
+    <form class="admin-modal__body" id="expenseForm">
+      <div class="admin-form-group">
+        <label class="admin-form-group__label" for="expenseDesc">Descripci&oacute;n *</label>
+        <input class="admin-form-group__input" type="text" id="expenseDesc" required placeholder="Ej: Renta, Publicidad, Envíos">
+      </div>
+      <div class="admin-form-row">
+        <div class="admin-form-group">
+          <label class="admin-form-group__label" for="expenseAmount">Monto *</label>
+          <input class="admin-form-group__input" type="number" id="expenseAmount" required min="0.01" step="0.01" placeholder="0.00">
+        </div>
+        <div class="admin-form-group">
+          <label class="admin-form-group__label" for="expenseDate">Fecha *</label>
+          <input class="admin-form-group__input" type="date" id="expenseDate" required>
+        </div>
+      </div>
+      <div class="admin-form-group">
+        <label class="admin-form-group__label" for="expenseCategory">Categor&iacute;a</label>
+        <select class="admin-form-group__select" id="expenseCategory">
+          <option value="mercancia">Compra de mercanc&iacute;a</option>
+          <option value="retiro_comision">Retiro comisi&oacute;n (25%)</option>
+          <option value="retiro_socia">Retiro socia (75%)</option>
+          <option value="retiro_inversion">Retiro inversi&oacute;n</option>
+          <option value="comision_mp">Comisi&oacute;n Mercado Pago</option>
+          <option value="renta">Renta</option>
+          <option value="publicidad">Publicidad</option>
+          <option value="envios">Env&iacute;os</option>
+          <option value="servicios">Servicios</option>
+          <option value="general">General</option>
+          <option value="otro">Otro</option>
+        </select>
+      </div>
+      <div class="admin-modal__actions">
+        <button type="button" class="admin-btn admin-btn--secondary" onclick="closeModals()">Cancelar</button>
+        <button type="submit" class="admin-btn admin-btn--primary">Guardar</button>
+      </div>
+    </form>
+  </div>
+
+
+  <!-- ===== CONFIRM DIALOG ===== -->
+  <div class="admin-overlay admin-overlay--confirm" id="confirmOverlay" onclick="closeConfirmDialog()"></div>
+  <div class="admin-modal admin-modal--sm" id="confirmDialog">
+    <div class="admin-modal__header">
+      <h3 class="admin-modal__title" id="confirmDialogTitle">Confirmar</h3>
+      <button class="admin-modal__close" onclick="closeConfirmDialog()">&times;</button>
+    </div>
+    <div class="admin-modal__body">
+      <p id="confirmDialogMessage"></p>
+      <div class="admin-modal__actions">
+        <button class="admin-btn admin-btn--secondary" onclick="closeConfirmDialog()">Cancelar</button>
+        <button class="admin-btn admin-btn--primary" id="confirmDialogBtn" style="background:#b91c1c">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TOAST ===== -->
+  <div class="admin-toast" id="adminToast"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

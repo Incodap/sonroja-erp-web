@@ -1,0 +1,4 @@
+# erp.sonroja.com es el panel interno: nada aquí es para buscadores.
+# La tienda pública es sonroja.com.
+User-agent: *
+Disallow: /
